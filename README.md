@@ -17,17 +17,16 @@
 
 
 # English
-This is an nbt addon. To get several nbt items, you need to enter /function ArmorAndItems
+This is an nbt addon. To get several nbt items, you need to enter /function ArmorAndItems , Blocks ,  Totems , sticks
 # Русский
-Это nbt аддон. Чтобы получить несколько nbt предметов надо ввести /function ArmorAndItems
-ещё..
+Это nbt аддон. Чтобы получить несколько nbt предметов надо ввести /function ArmorAndItems , Blocks ,  Totems , sticks
 
 
 
 
 # More information
 
-NBT Addon is an NBT addon for Minecraft Bedrock Edition, currently in alpha version.
+NBT addon for Minecraft Bedrock Edition
 
  
 
@@ -38,6 +37,9 @@ To get several NBT items, enter the following command:
  
 
 /function ArmorAndItems
+/function Blocks
+/function Totems
+/function sticks
 
  
 
@@ -51,13 +53,19 @@ Project contents:
 
  
 
-· functions — ArmorAndItems.mcfunction
+· functions — ArmorAndItems.mcfunction, Blocks, Totems, sticks
 
 · structures — structures
 
 · manifest.json — addon manifest
 
 · medrop.mcstructure — structure
+
+· blocks — structure
+
+· sticks — structure
+
+· totems — structure
 
 
 
