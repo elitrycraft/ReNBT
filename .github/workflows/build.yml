@@ -1,1 +1,39 @@
+name: Build MCPack
 
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:        # чтобы можно было запускать вручную
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show files (debug)
+        run: ls -la
+
+      - name: Create zip archive
+        run: |
+          # Исключаем служебные папки из архива
+          zip -r pack.zip . \
+            -x ".git/*" ".github/*" "*.zip" "*.mcpack"
+
+      - name: Rename to .mcpack
+        run: |
+          # Имя файла с версией и коротким SHA коммита
+          VERSION="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
+          mv pack.zip "MyPack-${VERSION}.mcpack"
+          echo "PACK_NAME=MyPack-${VERSION}.mcpack" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcpack-build
+          path: ${{ env.PACK_NAME }}
+          retention-days: 30
