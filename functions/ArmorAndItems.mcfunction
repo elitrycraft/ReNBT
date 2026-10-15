@@ -1,1 +1,1 @@
-structure load medrop ~ ~ ~
+structure load ArmorAndItems ~ ~ ~
