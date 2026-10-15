@@ -78,7 +78,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.version }}
-          name: OpenDeep ${{ inputs.version }}
+          name: ReNBT ${{ inputs.version }}
           body_path: release_notes.md
           files: "*.mcpack"
           draft: false
