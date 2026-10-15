@@ -38,7 +38,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install OpenDeep
-        run: pip install -e .[cf]
+        run: pip install "opendeep[cf]"
 
       - name: Save commits to file
         run: git log -30 --pretty=format:"- %s" > commits.txt
