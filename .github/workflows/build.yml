@@ -1,15 +1,23 @@
 name: Build MCPack
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:        # чтобы можно было запускать вручную
+  workflow_call:                 # вызывается из release.yml
+    inputs:
+      version:
+        required: true
+        type: string
+  workflow_dispatch:             # и вручную тоже можно
+    inputs:
+      version:
+        description: 'Версия (например, v1.0.0)'
+        required: false
+        default: 'dev'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pack_name: ${{ steps.pack.outputs.pack_name }}
 
     steps:
       - name: Checkout repository
@@ -20,20 +28,25 @@ jobs:
 
       - name: Create zip archive
         run: |
-          # Исключаем служебные папки из архива
           zip -r pack.zip . \
-            -x ".git/*" ".github/*" "*.zip" "*.mcpack"
+            -x ".git/*" ".github/*" "*.zip" "*.mcpack" "venv/*" "__pycache__/*" "*.pyc"
 
       - name: Rename to .mcpack
+        id: pack
         run: |
-          # Имя файла с версией и коротким SHA коммита
-          VERSION="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
-          mv pack.zip "MyPack-${VERSION}.mcpack"
-          echo "PACK_NAME=MyPack-${VERSION}.mcpack" >> $GITHUB_ENV
+          VERSION="${{ inputs.version }}"
+          # Если версия пустая — берём дату и SHA
+          if [ -z "$VERSION" ] || [ "$VERSION" = "dev" ]; then
+            VERSION="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
+          fi
+          PACK_NAME="OpenDeep-${VERSION}.mcpack"
+          mv pack.zip "$PACK_NAME"
+          echo "pack_name=$PACK_NAME" >> $GITHUB_OUTPUT
+          echo "Создан файл: $PACK_NAME"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: mcpack-build
-          path: ${{ env.PACK_NAME }}
+          path: ${{ steps.pack.outputs.pack_name }}
           retention-days: 30
