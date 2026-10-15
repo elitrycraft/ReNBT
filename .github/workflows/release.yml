@@ -1,0 +1,88 @@
+name: Publish Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: 'ID запуска workflow "Build MCPack" (из вкладки Actions)'
+        required: true
+        type: string
+      version:
+        description: 'Версия релиза (например, v1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write        # нужно для создания релиза
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # нужна история для changelog
+
+      - name: Download artifact from build run
+        uses: actions/download-artifact@v4
+        with:
+          name: mcpack-build
+          run-id: ${{ inputs.build_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show downloaded files
+        run: ls -la
+
+      - name: Get recent commits
+        id: commits
+        run: |
+          # Берём последние 20 коммитов для контекста ИИ
+          LOG=$(git log -20 --pretty=format:"- %s" | head -c 4000)
+          echo "log<<EOF" >> $GITHUB_OUTPUT
+          echo "$LOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes with AI
+        id: ai
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          PROMPT="Ты пишешь описание релиза для Minecraft Bedrock аддона. \
+          Версия: ${{ inputs.version }}. \
+          На основе этих коммитов составь краткое описание релиза на русском: \
+          что нового, что исправлено, что изменено. \
+          Формат: заголовок, затем разделы '✨ Новое', '🐛 Исправления', '🔧 Изменения'. \
+          Коммиты: ${{ steps.commits.outputs.log }}"
+
+          # Формируем JSON без проблем с экранированием через jq
+          JSON=$(jq -n --arg model "gpt-4o-mini" \
+                        --arg prompt "$PROMPT" \
+                        '{model: $model, messages: [{role: "user", content: $prompt}]}')
+
+          RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -d "$JSON")
+
+          NOTES=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
+
+          # Если ИИ не ответил — fallback
+          if [ -z "$NOTES" ] || [ "$NOTES" = "null" ]; then
+            NOTES="Релиз ${{ inputs.version }}. Автоматическое описание недоступно."
+          fi
+
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version }}
+          name: "Release ${{ inputs.version }}"
+          body: ${{ steps.ai.outputs.notes }}
+          files: "*.mcpack"
+          draft: false
+          prerelease: false
