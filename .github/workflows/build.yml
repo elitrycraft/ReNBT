@@ -39,7 +39,7 @@ jobs:
           if [ -z "$VERSION" ] || [ "$VERSION" = "dev" ]; then
             VERSION="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
           fi
-          PACK_NAME="OpenDeep-${VERSION}.mcpack"
+          PACK_NAME="ReNBT_${VERSION}.mcpack"
           mv pack.zip "$PACK_NAME"
           echo "pack_name=$PACK_NAME" >> $GITHUB_OUTPUT
           echo "Создан файл: $PACK_NAME"
