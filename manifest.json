@@ -3,7 +3,7 @@
     "header": {
         "name": "ReNBT",
         "description": "ReNBT addon for get rarity nbt items. Forked from S591Azs's repository.",
-        "uuid": "aa769c74-6ddb-4a5d-9b5e-f7ec14812720",
+        "uuid": "8d8063f9-8b59-452c-9faa-82abddd274da",
         "version": [1, 0, 1],
         "min_engine_version": [1, 21, 100]
     },
@@ -11,7 +11,7 @@
         {
             "type": "script",
             "language": "javascript",
-            "uuid": "a2f87bd3-be9b-4293-8053-919cdb9c031a",
+            "uuid": "0d508fbf-ef73-4fc8-8a9f-8866b6cbd05e",
             "version": [1, 0, 1]
         }
     ],
